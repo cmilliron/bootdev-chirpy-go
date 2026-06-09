@@ -1,1 +1,1 @@
-# chirpy-go
+# Chirpy Server
