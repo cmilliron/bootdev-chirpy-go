@@ -20,9 +20,9 @@ func main() {
 	// strip the app so that it doesn't automatically the route to the path and start serving 
 	// from static/ and not try to serve from app/static/
 	mux.Handle("/app/", apiCfg.middlewareMetricsInc(http.StripPrefix("/app", fileServer)))
-	mux.HandleFunc("GET /healthz", healthStatusHandler)
-	mux.HandleFunc("GET /metrics", apiCfg.metricsHandler)
-	mux.HandleFunc("POST /reset", apiCfg.resetHandler)
+	mux.HandleFunc("GET /api/healthz", healthStatusHandler)
+	mux.HandleFunc("GET /api/metrics", apiCfg.metricsHandler)
+	mux.HandleFunc("POST /api/reset", apiCfg.resetHandler)
 	
 	server := &http.Server{
 		Addr: ":" + port,
