@@ -33,20 +33,20 @@ func main() {
 }
 
 func healthStatusHandler(w http.ResponseWriter, r *http.Request) {
-	printRequestHeader(r)
+	// printRequestHeader(r)
 
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Add("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	body := []byte("OK")
+	body := []byte(http.StatusText(http.StatusOK))
 	w.Write(body)
 }
 
-func printRequestHeader(r *http.Request) error {
-	if r == nil {
-		return fmt.Errorf("the request was malformed.\n")
-	}
-	for key, value := range r.Header {
-		fmt.Printf("%s: %s\n", key, value)
-	}
-	return nil
-}
+// func printRequestHeader(r *http.Request) error {
+// 	if r == nil {
+// 		return fmt.Errorf("the request was malformed.\n")
+// 	}
+// 	for key, value := range r.Header {
+// 		fmt.Printf("%s: %s\n", key, value)
+// 	}
+// 	return nil
+// }
