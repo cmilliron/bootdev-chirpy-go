@@ -25,13 +25,13 @@ func respondWithError(w http.ResponseWriter, code int, msg string, err error)  {
 	sendApiResponse(w, code, respBody)
 }
 
-func respondWithSuccess(w http.ResponseWriter, code int, valid bool) {
+func respondWithSuccess(w http.ResponseWriter, code int, cleanedText string) {
 	type returnVals struct {
-		Valid bool `json:"valid"`
+		CleanedBody string `json:"cleaned_body"`
 	}
 
 	payload := returnVals{
-		Valid: valid,
+		CleanedBody: cleanedText,
 	}
 
 	sendApiResponse(w, code, payload)

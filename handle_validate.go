@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 
@@ -21,18 +22,40 @@ func handleValidateChirp(w http.ResponseWriter, r *http.Request) {
 		return
     }
 
-	err = validateChirp(params.Body)
+	cleanedChirp, err := validateChirp(params.Body)
 	if (err != nil) {
 		respondWithError(w, 400, err.Error(), err)
 	} else {	
-		respondWithSuccess(w, http.StatusOK, true)
+		respondWithSuccess(w, http.StatusOK, cleanedChirp)
 	}
 	
 }
 
-func validateChirp(chirp string) error {
+func validateChirp(chirp string) (string, error) {
 	if (len(chirp) > 140) {
-		return fmt.Errorf("Chirp is too long")
+		return "", fmt.Errorf("Chirp is too long")
 	}
-	return nil
+	cleanedChirp, err := cleanVulgar(chirp); 
+	if (err != nil) {
+		return "", err
+	}
+	return cleanedChirp, nil
+}
+
+func cleanVulgar(chirp string) (string, error) {
+	vulgarWords := map[string]struct{}{
+		"kerfuffle": {}, 
+		"sharbert": {}, 
+		"fornax": {},
+	}
+	words := strings.Split(chirp," ")
+	for i, word := range words {
+		lowerWord := strings.ToLower(word)
+		if _, ok := vulgarWords[lowerWord]; ok {
+			words[i] = "****"
+		}
+	
+	}
+	cleanedChirp := strings.Join(words, " ")
+	return cleanedChirp, nil
 }
