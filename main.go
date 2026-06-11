@@ -20,9 +20,14 @@ func main() {
 	// strip the app so that it doesn't automatically the route to the path and start serving 
 	// from static/ and not try to serve from app/static/
 	mux.Handle("/app/", apiCfg.middlewareMetricsInc(http.StripPrefix("/app", fileServer)))
+
+	// api routes
 	mux.HandleFunc("GET /api/healthz", healthStatusHandler)
-	mux.HandleFunc("GET /api/metrics", apiCfg.metricsHandler)
-	mux.HandleFunc("POST /api/reset", apiCfg.resetHandler)
+	mux.HandleFunc("POST /api/validate_chirp", handleValidateChirp)
+
+	// admin routes
+	mux.HandleFunc("GET /admin/metrics", apiCfg.metricsHandler)
+	mux.HandleFunc("POST /admin/reset", apiCfg.resetHandler)
 	
 	server := &http.Server{
 		Addr: ":" + port,
@@ -47,9 +52,14 @@ func (cfg *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
 
 func (cfg *apiConfig) metricsHandler(w http.ResponseWriter, r *http.Request) {
 	// printRequestHeader(r)
-	w.Header().Add("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Add("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	bodyContent := fmt.Sprintf("Hits: %d\n", cfg.fileServerHits.Load())
+	bodyContent := fmt.Sprintf(`<html>
+  <body>
+    <h1>Welcome, Chirpy Admin</h1>
+    <p>Chirpy has been visited %d times!</p>
+  </body>
+</html>`, cfg.fileServerHits.Load())
 	body := []byte(bodyContent)
 	w.Write(body)
 
@@ -63,28 +73,12 @@ func (cfg *apiConfig) resetHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(body)
 }
 
-
 func healthStatusHandler(w http.ResponseWriter, r *http.Request) {
-	// printRequestHeader(r)
-
 	w.Header().Add("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 	body := []byte(http.StatusText(http.StatusOK))
 	w.Write(body)
 }
-
-
-
-
-// func printRequestHeader(r *http.Request) error {
-// 	if r == nil {
-// 		return fmt.Errorf("the request was malformed.\n")
-// 	}
-// 	for key, value := range r.Header {
-// 		fmt.Printf("%s: %s\n", key, value)
-// 	}
-// 	return nil
-// }
 
 func middlewareLog(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
