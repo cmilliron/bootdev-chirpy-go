@@ -1,5 +1,6 @@
 #!/bin/bash
 
+clear
 # Build the Go application
 echo "Building..."
 if go build -o out; then

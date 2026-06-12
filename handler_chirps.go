@@ -10,8 +10,8 @@ import (
 	"github.com/google/uuid"
 )
 
-
-func (cfg *apiConfig) handleCreateChirp(w http.ResponseWriter, r *http.Request) {
+// POST /api/chirps
+func (cfg *apiConfig) handlerCreateChirp(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Body 	string `json:"body"`
 		UserId	uuid.UUID `json:"user_id"`
@@ -51,6 +51,53 @@ func (cfg *apiConfig) handleCreateChirp(w http.ResponseWriter, r *http.Request) 
 	sendApiResponse(w, http.StatusCreated, resChirp)
 }
 
+func (cfg *apiConfig) handlerGetAllChrips(w http.ResponseWriter, r *http.Request) {
+	chrips, err := cfg.db.GetAllChirps(r.Context())
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Coudld fetch tweets", err)
+		return
+    }
+
+	resChirps := []ChirpResponse{}
+	for _, chirp := range chrips {
+		resChirps = append(resChirps, ChirpResponse{
+			ID: chirp.ID,
+			CreatedAt: chirp.CreatedAt,
+			UpdatedAt: chirp.UpdatedAt,
+			Body: chirp.Body,
+			UserID: chirp.UserID,
+		})	
+	}
+	sendApiResponse(w, http.StatusOK, resChirps)
+}
+
+func (cfg *apiConfig) handlerSingleChirp(w http.ResponseWriter, r *http.Request) {
+	chirpId := r.PathValue("ChirpId")
+	chirpUuid, err := uuid.Parse(chirpId)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid chirp ID", err)
+		return
+    }
+
+	chirp, err := cfg.db.GetChirpByID(r.Context(), chirpUuid)
+	if err != nil {
+		respondWithError(w, http.StatusNotFound, "Coudld fetch tweet", err)
+		return
+    }
+
+	resChirp := ChirpResponse{
+		ID: chirp.ID,
+		CreatedAt: chirp.CreatedAt,
+		UpdatedAt: chirp.UpdatedAt,
+		Body: chirp.Body,
+		UserID: chirp.UserID,
+	}
+
+	sendApiResponse(w, http.StatusOK, resChirp)
+}
+
+
+// Helper Functions
 func validateChirp(chirp string) (string, error) {
 	if (len(chirp) > 140) {
 		return "", fmt.Errorf("Chirp is too long")
@@ -79,3 +126,4 @@ func cleanVulgar(chirp string) (string, error) {
 	cleanedChirp := strings.Join(words, " ")
 	return cleanedChirp, nil
 }
+
