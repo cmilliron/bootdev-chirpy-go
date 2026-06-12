@@ -8,35 +8,35 @@ import (
 
 
 func respondWithError(w http.ResponseWriter, code int, msg string, err error)  {
-	if err != nil {
-		log.Println(err)
-	}
-
-	if code > 499 {
-		log.Printf("Responding with 5XX error: %s", msg)
-	}
-
 	type errorRepsonse struct {
 		Error string `json:"error"`
 	}
-    respBody := errorRepsonse{
-		Error: msg + ": " + err.Error(),
-    }
+	if err != nil {
+		log.Println(err)
+	}
+	
+	if code > 499 {
+		log.Printf("Responding with 5XX error: %s", msg)
+	}
+	
+	respBody := errorRepsonse{
+		Error: msg,
+	}
 
 	sendApiResponse(w, code, respBody)
 }
 
-func respondWithSuccess(w http.ResponseWriter, code int, cleanedText string) {
-	type returnVals struct {
-		CleanedBody string `json:"cleaned_body"`
-	}
+// func respondWithSuccess(w http.ResponseWriter, code int, cleanedText string) {
+// 	type returnVals struct {
+// 		CleanedBody string `json:"cleaned_body"`
+// 	}
 
-	payload := returnVals{
-		CleanedBody: cleanedText,
-	}
+// 	payload := returnVals{
+// 		CleanedBody: cleanedText,
+// 	}
 
-	sendApiResponse(w, code, payload)
-}
+// 	sendApiResponse(w, code, payload)
+// }
 
 
 func sendApiResponse(w http.ResponseWriter, code int, payload interface{}) {
