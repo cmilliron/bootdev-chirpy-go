@@ -55,7 +55,8 @@ func main() {
 
 	// api routes
 	mux.HandleFunc("GET /api/healthz", healthStatusHandler)
-	mux.HandleFunc("POST /api/validate_chirp", handleValidateChirp)
+	// mux.HandleFunc("POST /api/validate_chirp", handleValidateChirp)
+	mux.HandleFunc("POST /api/chirps", apiCfg.handleCreateChirp)
 	mux.HandleFunc("POST /api/users", apiCfg.handleCreateUser)
 
 	// admin routes
