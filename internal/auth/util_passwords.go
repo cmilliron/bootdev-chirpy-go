@@ -2,6 +2,8 @@ package auth
 
 import (
 	"fmt"
+	"net/http"
+	"strings"
 
 	"github.com/alexedwards/argon2id"
 )
@@ -22,4 +24,20 @@ func CheckPasswordHash(password, hash string) (bool, error) {
 	}
 
 	return results, nil
+}
+
+func GetBearerToken(headers http.Header) (string, error) {
+	authHeader := headers.Get("Authorization")
+
+	if authHeader == "" {
+		return "", fmt.Errorf("Auhorization failed")
+	}
+
+
+	token, prefixExists := strings.CutPrefix(authHeader, "Bearer ")
+	if token == "" || prefixExists == false{
+		return "", fmt.Errorf("Malformed token")
+	}
+
+	return token, nil
 }

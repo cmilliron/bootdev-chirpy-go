@@ -17,6 +17,7 @@ type apiConfig struct {
 	fileServerHits	atomic.Int32
 	db		*database.Queries
 	platform	string
+	secret		string
 }
 
 func main() {
@@ -28,6 +29,10 @@ func main() {
 	dbURL := os.Getenv("DB_URL")
 	if dbURL == "" {
 		log.Fatal("DB_URL must be set")
+	}
+	secret := os.Getenv("JWT_SECRET")
+	if secret == "" {
+		log.Fatal("JWT_SECRET environment variable is not set")
 	}
 	
 	platform := os.Getenv("PLATFORM")
@@ -44,6 +49,7 @@ func main() {
 	apiCfg := apiConfig{
 		db: dbQueries,
 		platform: platform,
+		secret: secret,
 	}
 	
 	mux := http.NewServeMux()

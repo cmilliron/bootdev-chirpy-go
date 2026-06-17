@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/cmilliron/bootdev-chirpy-go/internal/auth"
 	"github.com/cmilliron/bootdev-chirpy-go/internal/database"
 	"github.com/google/uuid"
 )
@@ -14,12 +15,23 @@ import (
 func (cfg *apiConfig) handlerCreateChirp(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Body 	string `json:"body"`
-		UserId	uuid.UUID `json:"user_id"`
 	}
+
+	token, err := auth.GetBearerToken(r.Header)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, "No Token", err)
+		return
+    }
+
+	userId, err := auth.ValidateJWT(token, cfg.secret)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, "Invalid or expired token", err)
+		return
+    }
 
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
-	err := decoder.Decode(&params)
+	err = decoder.Decode(&params)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters", err)
 		return
@@ -33,7 +45,7 @@ func (cfg *apiConfig) handlerCreateChirp(w http.ResponseWriter, r *http.Request)
 	
 	newChirp, err := cfg.db.CreateChirp(r.Context(), database.CreateChirpParams{
 		Body: validChirp,
-		UserID: params.UserId,
+		UserID: userId,
 	})
 		
 	if err != nil {
