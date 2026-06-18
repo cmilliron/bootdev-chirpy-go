@@ -1,0 +1,156 @@
+[?25l[?2004h╭──────────────────────────────────────────╮
+│ POST http://localhost:8080/admin/reset 🛡︎ │
+╰┬─────────────────────────────────────────╯
+ ├─  ?  Expecting status code: 200
+╭─────────────────────────────────────────╮
+│ ⣽  POST http://localhost:8080/api/users │
+╰┬────────────────────────────────────────╯
+[7A
+
+
+
+╭──────────────────────────────────────╮
+│ POST http://localhost:8080/api/users │
+╰┬─────────────────────────────────────╯
+ ├─  ?  Expecting status code: 201
+ ├─  ?  Expecting JSON at .email to be equal to saul@bettercall.com
+╭─────────────────────────────────────────╮
+│ ⣽  POST http://localhost:8080/api/login │
+╰┬────────────────────────────────────────╯
+[12A
+
+
+
+
+
+
+
+
+╭──────────────────────────────────────╮
+│ POST http://localhost:8080/api/login │
+╰┬─────────────────────────────────────╯
+ ├─  ?  Expecting status code: 200
+╭───────────────────────────────────────╮
+│ POST http://localhost:8080/api/chirps │
+╰┬──────────────────────────────────────╯
+ ├─  ?  Expecting status code: 401
+╭──────────────────────────────────────────╮
+│ ⣽  POST http://localhost:8080/api/chirps │
+╰┬─────────────────────────────────────────╯
+[20A [J[2K[?2004l[?25h[?1002l[?1003l[?1006l╭──────────────────────────────────────────╮
+│ POST http://localhost:8080/admin/reset 🛡︎ │
+╰┬─────────────────────────────────────────╯
+ ├─  ?  Expecting status code: 200
+  Response Status Code: 200
+  Response Body: 
+Hits reset to 0.
+Hits: 0
+
+
+╭──────────────────────────────────────╮
+│ POST http://localhost:8080/api/users │
+╰┬─────────────────────────────────────╯
+ ├─  ?  Expecting status code: 201
+ ├─  ?  Expecting JSON at .email to be equal to saul@bettercall.com
+  Response Status Code: 201
+  Response Body: 
+{
+  "created_at": "2026-06-17T22:23:33.577118Z",
+  "email": "saul@bettercall.com",
+  "id": "a47e26e1-df6d-4c1c-9247-262ee84db960",
+  "updated_at": "2026-06-17T22:23:33.577118Z"
+}
+
+╭──────────────────────────────────────╮
+│ POST http://localhost:8080/api/login │
+╰┬─────────────────────────────────────╯
+ ├─  ?  Expecting status code: 200
+  Response Status Code: 200
+  Response Body: 
+{
+  "created_at": "2026-06-17T22:23:33.577118Z",
+  "email": "saul@bettercall.com",
+  "id": "a47e26e1-df6d-4c1c-9247-262ee84db960",
+  "refresh_token": "8c11c0cf0112708c38b43a6c7814d5b8a5778905fe9ac2663a218b0a097b7b83",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjaGlycHktYWNjZXNzIiwic3ViIjoiYTQ3ZTI2ZTEtZGY2ZC00YzFjLTkyNDctMjYyZWU4NGRiOTYwIiwiZXhwIjoxNzgxNzUzMDEzLCJpYXQiOjE3ODE3NDk0MTN9.AOb1qquyiFGZqpJ3yCZwxP_6xsPSD1xrhT0BHBoNX14",
+  "updated_at": "2026-06-17T22:23:33.577118Z"
+}
+  Variables Saved: 
+   - saulAccessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjaGlycHktYWNjZXNzIiwic3ViIjoiYTQ3ZTI2ZTEtZGY2ZC00YzFjLTkyNDctMjYyZWU4NGRiOTYwIiwiZXhwIjoxNzgxNzUzMDEzLCJpYXQiOjE3ODE3NDk0MTN9.AOb1qquyiFGZqpJ3yCZwxP_6xsPSD1xrhT0BHBoNX14 (JSON Body .token)
+   - saulRefreshToken: 8c11c0cf0112708c38b43a6c7814d5b8a5778905fe9ac2663a218b0a097b7b83 (JSON Body .refresh_token)
+
+╭───────────────────────────────────────╮
+│ POST http://localhost:8080/api/chirps │
+╰┬──────────────────────────────────────╯
+ ├─  ?  Expecting status code: 401
+  Response Status Code: 401
+  Response Body: 
+{
+  "error": "Invalid or expired token"
+}
+  Variables Available: 
+   - saulRefreshToken: 8c11c0cf0112708c38b43a6c7814d5b8a5778905fe9ac2663a218b0a097b7b83 (Request Header "Authorization")
+
+╭───────────────────────────────────────╮
+│ POST http://localhost:8080/api/chirps │
+╰┬──────────────────────────────────────╯
+ ├─  ?  Expecting status code: 201
+  Response Status Code: 201
+  Response Body: 
+{
+  "body": "Let's just say I know a guy... who knows a guy... who knows another guy.",
+  "created_at": "2026-06-17T22:23:33.59892Z",
+  "id": "a11bcefe-1e73-468f-bb7e-da58baab9414",
+  "updated_at": "2026-06-17T22:23:33.59892Z",
+  "user_id": "a47e26e1-df6d-4c1c-9247-262ee84db960"
+}
+  Variables Available: 
+   - saulAccessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjaGlycHktYWNjZXNzIiwic3ViIjoiYTQ3ZTI2ZTEtZGY2ZC00YzFjLTkyNDctMjYyZWU4NGRiOTYwIiwiZXhwIjoxNzgxNzUzMDEzLCJpYXQiOjE3ODE3NDk0MTN9.AOb1qquyiFGZqpJ3yCZwxP_6xsPSD1xrhT0BHBoNX14 (Request Header "Authorization")
+
+╭────────────────────────────────────────╮
+│ POST http://localhost:8080/api/refresh │
+╰┬───────────────────────────────────────╯
+ ├─  ?  Expecting status code: 200
+  Response Status Code: 404
+  Response Body: 
+404 page not found
+
+  Variables Missing: 
+   - saulAccessToken2: [not found] (JSON Body .token)
+  Variables Available: 
+   - saulRefreshToken: 8c11c0cf0112708c38b43a6c7814d5b8a5778905fe9ac2663a218b0a097b7b83 (Request Header "Authorization")
+
+╭───────────────────────────────────────╮
+│ POST http://localhost:8080/api/chirps │
+╰┬──────────────────────────────────────╯
+ ├─  ?  Expecting status code: 201
+  Response Status Code: 401
+  Response Body: 
+{
+  "error": "Invalid or expired token"
+}
+  Variables Available: 
+   - saulAccessToken2: [not found] (Request Header "Authorization")
+
+╭───────────────────────────────────────╮
+│ POST http://localhost:8080/api/revoke │
+╰┬──────────────────────────────────────╯
+ ├─  ?  Expecting status code: 204
+  Response Status Code: 404
+  Response Body: 
+404 page not found
+
+  Variables Available: 
+   - saulRefreshToken: 8c11c0cf0112708c38b43a6c7814d5b8a5778905fe9ac2663a218b0a097b7b83 (Request Header "Authorization")
+
+╭────────────────────────────────────────╮
+│ POST http://localhost:8080/api/refresh │
+╰┬───────────────────────────────────────╯
+ ├─  ?  Expecting status code: 401
+  Response Status Code: 404
+  Response Body: 
+404 page not found
+
+  Variables Available: 
+   - saulRefreshToken: 8c11c0cf0112708c38b43a6c7814d5b8a5778905fe9ac2663a218b0a097b7b83 (Request Header "Authorization")
+

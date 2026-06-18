@@ -7,17 +7,23 @@ import (
 	"net/http"
 	"os"
 	"sync/atomic"
+	"time"
 
 	"github.com/cmilliron/bootdev-chirpy-go/internal/database"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
+type defaults struct {
+	tokenExpiresIn 	time.Duration
+}
+
 type apiConfig struct {
 	fileServerHits	atomic.Int32
 	db		*database.Queries
 	platform	string
 	secret		string
+	defaults	defaults
 }
 
 func main() {
@@ -50,6 +56,9 @@ func main() {
 		db: dbQueries,
 		platform: platform,
 		secret: secret,
+		defaults: defaults{
+			tokenExpiresIn: 3600 * time.Second,
+		},
 	}
 	
 	mux := http.NewServeMux()
@@ -67,6 +76,8 @@ func main() {
 	mux.HandleFunc("GET /api/chirps/{ChirpId}", apiCfg.handlerSingleChirp)
 	mux.HandleFunc("POST /api/users", apiCfg.handlerCreateUser)
 	mux.HandleFunc("POST /api/login", apiCfg.handlerLogin)
+	mux.HandleFunc("POST /api/refresh", apiCfg.handlerRefreshToken)
+	mux.HandleFunc("POST /api/revoke", apiCfg.handlerRevokeRefreshToken)
 
 	// admin routes
 	mux.HandleFunc("GET /admin/metrics", apiCfg.metricsHandler)
