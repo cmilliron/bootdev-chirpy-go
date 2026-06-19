@@ -12,9 +12,9 @@ import (
 // handlerCreateUser registers a new user account with a hashed password.
 func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
-		Email 	string `json:"email"`
+		Email    string `json:"email"`
 		Password string `json:"password"`
-	}		
+	}
 
 	decoder := json.NewDecoder(r.Body)
 	var data parameters
@@ -30,8 +30,8 @@ func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	user, err :=  cfg.db.CreateUser(r.Context(), database.CreateUserParams{
-		Email: data.Email, 
+	user, err := cfg.db.CreateUser(r.Context(), database.CreateUserParams{
+		Email:          data.Email,
 		HashedPassword: hashedPassword,
 	})
 	if err != nil {
@@ -40,10 +40,10 @@ func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) 
 	}
 
 	mappedUser := User{
-		ID: user.ID,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.CreatedAt,
-		Email: user.Email,
+		ID:          user.ID,
+		CreatedAt:   user.CreatedAt,
+		UpdatedAt:   user.CreatedAt,
+		Email:       user.Email,
 		IsChirpyRed: user.IsChirpyRed,
 	}
 	sendApiResponse(w, http.StatusCreated, mappedUser)
@@ -53,10 +53,10 @@ func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) 
 // handlerUpdateUser updates the authenticated user's email and password.
 func (cfg *apiConfig) handlerUpdateUser(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
-		Email 		string `json:"email"`
-		Password	string `json:"password"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
 	}
-	
+
 	var jsonRequest parameters
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&jsonRequest)
@@ -69,14 +69,14 @@ func (cfg *apiConfig) handlerUpdateUser(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, "No access token", err)
 		return
-    }
-	
+	}
+
 	userId, err := auth.ValidateJWT(accessToken, cfg.secret)
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, "Token malformed or ", err)
 		return
-    }
-	
+	}
+
 	hashedPassword, err := auth.HashPassword(jsonRequest.Password)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Could not hash password", err)
@@ -84,20 +84,20 @@ func (cfg *apiConfig) handlerUpdateUser(w http.ResponseWriter, r *http.Request) 
 	}
 
 	user, err := cfg.db.UpdateUser(r.Context(), database.UpdateUserParams{
-		Email: jsonRequest.Email,
+		Email:          jsonRequest.Email,
 		HashedPassword: hashedPassword,
-		ID: userId,
+		ID:             userId,
 	})
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, "Couldn't update user", err)
 		return
-    }
+	}
 
 	mappedUser := User{
-		ID: user.ID,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.CreatedAt,
-		Email: user.Email,
+		ID:          user.ID,
+		CreatedAt:   user.CreatedAt,
+		UpdatedAt:   user.CreatedAt,
+		Email:       user.Email,
 		IsChirpyRed: user.IsChirpyRed,
 	}
 	sendApiResponse(w, http.StatusOK, mappedUser)
@@ -107,9 +107,9 @@ func (cfg *apiConfig) handlerUpdateUser(w http.ResponseWriter, r *http.Request) 
 // as Chirpy Red when their upgrade event is received.
 func (cfg *apiConfig) handlerUpdateChirpyRed(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
-		Event	string	`json:"event"`
-		Data	struct {	
-			UserId	uuid.UUID	`json:"user_id"`
+		Event string `json:"event"`
+		Data  struct {
+			UserId uuid.UUID `json:"user_id"`
 		} `json:"data"`
 	}
 
@@ -134,12 +134,12 @@ func (cfg *apiConfig) handlerUpdateChirpyRed(w http.ResponseWriter, r *http.Requ
 
 	_, err = cfg.db.UpdateUserPremiumStatus(r.Context(), database.UpdateUserPremiumStatusParams{
 		IsChirpyRed: true,
-		ID: params.Data.UserId,
+		ID:          params.Data.UserId,
 	})
 	if err != nil {
 		respondWithError(w, http.StatusNotFound, "User Not Found", err)
 		return
-    }
+	}
 
 	sendApiResponse(w, http.StatusNoContent, nil)
 }

@@ -15,21 +15,21 @@ import (
 )
 
 type defaults struct {
-	tokenExpiresIn 	time.Duration
+	tokenExpiresIn time.Duration
 }
 
 type apiConfig struct {
-	fileServerHits	atomic.Int32
-	db		*database.Queries
-	platform	string
-	secret		string
-	polkaKey	string
-	defaults	defaults
+	fileServerHits atomic.Int32
+	db             *database.Queries
+	platform       string
+	secret         string
+	polkaKey       string
+	defaults       defaults
 }
 
 func main() {
 	const (
-		port = "8080"
+		port         = "8080"
 		filePathRoot = "./static"
 	)
 	godotenv.Load()
@@ -41,7 +41,7 @@ func main() {
 	if secret == "" {
 		log.Fatal("JWT_SECRET environment variable is not set")
 	}
-	
+
 	platform := os.Getenv("PLATFORM")
 	if platform == "" {
 		log.Fatal("PLATFORM must be set")
@@ -53,47 +53,47 @@ func main() {
 	}
 	fmt.Println("url: " + dbURL)
 	db, err := sql.Open("postgres", dbURL)
-	if (err != nil) {
+	if err != nil {
 		log.Fatal("Database Connection Failed")
 	}
 	dbQueries := database.New(db)
 
 	apiCfg := apiConfig{
-		db: dbQueries,
+		db:       dbQueries,
 		platform: platform,
-		secret: secret,
+		secret:   secret,
 		polkaKey: polkaKey,
 		defaults: defaults{
 			tokenExpiresIn: 3600 * time.Second,
 		},
 	}
-	
+
 	mux := http.NewServeMux()
 	fileServer := http.FileServer(http.Dir(filePathRoot))
-	
+
 	// Serve the frontend assets from /app and count each file request.
 	mux.Handle("/app/", apiCfg.middlewareMetricsInc(http.StripPrefix("/app", fileServer)))
 
 	// API routes for health checks, chirps, users, auth, and webhook events.
 	mux.HandleFunc("GET /api/healthz", healthStatusHandler)
 	// mux.HandleFunc("POST /api/validate_chirp", handleValidateChirp)
-	mux.HandleFunc("POST /api/chirps", apiCfg.handlerCreateChirp) // create a new chirp
-	mux.HandleFunc("GET /api/chirps", apiCfg.handlerGetAllChrips) // list chirps (optionally filtered by author)
-	mux.HandleFunc("GET /api/chirps/{chirpId}", apiCfg.handlerSingleChirp) // fetch one chirp by ID
-	mux.HandleFunc("POST /api/users", apiCfg.handlerCreateUser) // create a new user account
-	mux.HandleFunc("POST /api/login", apiCfg.handlerLogin) // authenticate a user and return tokens
-	mux.HandleFunc("POST /api/refresh", apiCfg.handlerRefreshToken) // refresh an expired access token
-	mux.HandleFunc("POST /api/revoke", apiCfg.handlerRevokeRefreshToken) // revoke a refresh token
-	mux.HandleFunc("PUT /api/users", apiCfg.handlerUpdateUser) // update a user's profile information
+	mux.HandleFunc("POST /api/chirps", apiCfg.handlerCreateChirp)             // create a new chirp
+	mux.HandleFunc("GET /api/chirps", apiCfg.handlerGetAllChrips)             // list chirps (optionally filtered by author)
+	mux.HandleFunc("GET /api/chirps/{chirpId}", apiCfg.handlerSingleChirp)    // fetch one chirp by ID
+	mux.HandleFunc("POST /api/users", apiCfg.handlerCreateUser)               // create a new user account
+	mux.HandleFunc("POST /api/login", apiCfg.handlerLogin)                    // authenticate a user and return tokens
+	mux.HandleFunc("POST /api/refresh", apiCfg.handlerRefreshToken)           // refresh an expired access token
+	mux.HandleFunc("POST /api/revoke", apiCfg.handlerRevokeRefreshToken)      // revoke a refresh token
+	mux.HandleFunc("PUT /api/users", apiCfg.handlerUpdateUser)                // update a user's profile information
 	mux.HandleFunc("DELETE /api/chirps/{chirpId}", apiCfg.handlerDeleteChirp) // delete one chirp if owned by the user
 	mux.HandleFunc("POST /api/polka/webhooks", apiCfg.handlerUpdateChirpyRed) // handle premium upgrade webhook events
 
 	// Admin routes for metrics and database reset operations.
 	mux.HandleFunc("GET /admin/metrics", apiCfg.metricsHandler)
 	mux.HandleFunc("POST /admin/reset", apiCfg.resetHandler)
-	
+
 	server := &http.Server{
-		Addr: ":" + port,
+		Addr:    ":" + port,
 		Handler: mux,
 	}
 
@@ -101,8 +101,6 @@ func main() {
 	log.Fatal(server.ListenAndServe())
 	defer server.Close()
 }
-
-
 
 func (cfg *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -126,21 +124,21 @@ func (cfg *apiConfig) metricsHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 func (cfg *apiConfig) resetHandler(w http.ResponseWriter, r *http.Request) {
-	if (cfg.platform != "dev") {
+	if cfg.platform != "dev" {
 		w.WriteHeader(http.StatusForbidden)
 		w.Write([]byte("Reset is only allowed in dev environment."))
 		return
 	}
-	
+
 	cfg.fileServerHits.Store(0)
-	
+
 	err := cfg.db.Reset(r.Context())
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Failed to reset the database: " + err.Error()))
 		return
 	}
-	
+
 	w.Header().Add("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 	bodyContent := fmt.Sprintf("Hits reset to 0.\nHits: %d\n", cfg.fileServerHits.Load())

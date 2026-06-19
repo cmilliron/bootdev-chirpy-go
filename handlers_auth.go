@@ -12,23 +12,23 @@ import (
 	"github.com/google/uuid"
 )
 
-type UserWithToken struct{
-		ID				uuid.UUID  	`json:"id"`
-		CreatedAt 		time.Time	`json:"created_at"`
-		UpdatedAt 		time.Time	`json:"updated_at"`
-		Email			string		`json:"email"`
-		Token 			string		`json:"token"`
-		RefreshToken 	string		`json:"refresh_token"`
-		IsChirpyRed		bool		`json:"is_chirpy_red"`
-	}
+type UserWithToken struct {
+	ID           uuid.UUID `json:"id"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
+	Email        string    `json:"email"`
+	Token        string    `json:"token"`
+	RefreshToken string    `json:"refresh_token"`
+	IsChirpyRed  bool      `json:"is_chirpy_red"`
+}
 
 // handlerLogin authenticates a user, verifies the password, and returns
 // the access token, refresh token, and user details.
 func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
-		Email 	string `json:"email"`
+		Email    string `json:"email"`
 		Password string `json:"password"`
-	}		
+	}
 
 	decoder := json.NewDecoder(r.Body)
 	var params parameters
@@ -47,7 +47,7 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 
 	result, err := auth.CheckPasswordHash(params.Password, user.HashedPassword)
 	if err != nil || !result {
-		if !result { 
+		if !result {
 			err = errors.New("Authorization error")
 		}
 		respondWithError(w, http.StatusUnauthorized, "Something went wrong with your login", err) //change for production
@@ -62,8 +62,8 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 
 	refreshToken := auth.MakeRefreshToken()
 	newRefreshToken, err := cfg.db.CreateRefreshToken(r.Context(), database.CreateRefreshTokenParams{
-		Token: refreshToken,
-		UserID: user.ID,
+		Token:     refreshToken,
+		UserID:    user.ID,
 		ExpiresAt: time.Now().UTC().Add(60 * 24 * time.Hour),
 	})
 	if err != nil {
@@ -72,18 +72,17 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	mappedUser := UserWithToken{
-		ID: user.ID,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.CreatedAt,
-		Email: user.Email,
-		Token: token,
+		ID:           user.ID,
+		CreatedAt:    user.CreatedAt,
+		UpdatedAt:    user.CreatedAt,
+		Email:        user.Email,
+		Token:        token,
 		RefreshToken: newRefreshToken.Token,
-		IsChirpyRed: user.IsChirpyRed,
+		IsChirpyRed:  user.IsChirpyRed,
 	}
-	
+
 	sendApiResponse(w, http.StatusOK, mappedUser)
 }
-
 
 // handlerRefreshToken exchanges a valid refresh token for a new access token.
 func (cfg *apiConfig) handlerRefreshToken(w http.ResponseWriter, r *http.Request) {
@@ -91,25 +90,24 @@ func (cfg *apiConfig) handlerRefreshToken(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, "No Token", err)
 		return
-    }
-	
+	}
+
 	tokenData, err := cfg.db.GetRefreshToken(r.Context(), refresh_token)
-	if err != nil ||  tokenData.RevokedAt.Valid || !tokenData.ExpiresAt.After(time.Now()) {
+	if err != nil || tokenData.RevokedAt.Valid || !tokenData.ExpiresAt.After(time.Now()) {
 		respondWithError(w, http.StatusUnauthorized, "Token expired or revoked", err)
 		return
 	}
-	
-	
+
 	accessToken, err := auth.MakeJWT(tokenData.UserID, cfg.secret, cfg.defaults.tokenExpiresIn)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Error creating token", err)
 		return
 	}
-	
+
 	type response struct {
-		Token	string `json:"token"`
+		Token string `json:"token"`
 	}
-	
+
 	sendApiResponse(w, http.StatusOK, response{
 		Token: accessToken,
 	})
@@ -123,7 +121,7 @@ func (cfg *apiConfig) handlerRevokeRefreshToken(w http.ResponseWriter, r *http.R
 
 		respondWithError(w, http.StatusUnauthorized, "No Token", err)
 		return
-    }
+	}
 
 	_, err = cfg.db.UpdateRevokeRefreshToken(r.Context(), refresh_token)
 	if err != nil {
@@ -132,6 +130,5 @@ func (cfg *apiConfig) handlerRevokeRefreshToken(w http.ResponseWriter, r *http.R
 	}
 
 	sendApiResponse(w, http.StatusNoContent, nil)
-	
-}  
 
+}
