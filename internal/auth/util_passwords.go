@@ -35,8 +35,22 @@ func GetBearerToken(headers http.Header) (string, error) {
 		return "", fmt.Errorf("Auhorization failed")
 	}
 
-
 	token, prefixExists := strings.CutPrefix(authHeader, "Bearer ")
+	if token == "" || prefixExists == false{
+		return "", fmt.Errorf("Malformed token")
+	}
+
+	return token, nil
+}
+
+func GetApiKey(headers http.Header) (string, error) {
+	authHeader := headers.Get("Authorization")
+
+	if authHeader == "" {
+		return "", fmt.Errorf("Auhorization failed")
+	}
+
+	token, prefixExists := strings.CutPrefix(authHeader, "ApiKey ")
 	if token == "" || prefixExists == false{
 		return "", fmt.Errorf("Malformed token")
 	}

@@ -1,6 +1,13 @@
 #!/bin/bash
 
+set -e
+
 clear
+# Generate sql
+echo "Building sql queries with sqlc"
+sqlc generate
+echo "Success"
+
 # Build the Go application
 echo "Building..."
 if go build -o out; then

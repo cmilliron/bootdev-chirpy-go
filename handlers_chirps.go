@@ -63,15 +63,30 @@ func (cfg *apiConfig) handlerCreateChirp(w http.ResponseWriter, r *http.Request)
 	sendApiResponse(w, http.StatusCreated, resChirp)
 }
 
+// GET /api/chirps
+// optional query pararameters: author_id
 func (cfg *apiConfig) handlerGetAllChrips(w http.ResponseWriter, r *http.Request) {
-	chrips, err := cfg.db.GetAllChirps(r.Context())
+	authorId, err := getAuthorFromQueryParams(r)	
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Coudld fetch tweets", err)
+		respondWithError(w, http.StatusBadRequest, "Invalid author ID", err)
 		return
-    }
+	}
+	
+	var chirps []database.Chirp
+
+	if authorId == uuid.Nil {
+		chirps, err = cfg.db.GetAllChirps(r.Context())
+	} else {
+		chirps, err = cfg.db.GetChirpsByAuthor(r.Context(), authorId)
+	}
+
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Error fetching chirps", err)
+		return
+	}
 
 	resChirps := []ChirpResponse{}
-	for _, chirp := range chrips {
+	for _, chirp := range chirps {
 		resChirps = append(resChirps, ChirpResponse{
 			ID: chirp.ID,
 			CreatedAt: chirp.CreatedAt,
@@ -173,5 +188,17 @@ func cleanVulgar(chirp string) (string, error) {
 	}
 	cleanedChirp := strings.Join(words, " ")
 	return cleanedChirp, nil
+}
+
+func getAuthorFromQueryParams(r *http.Request) (uuid.UUID, error) {
+	authorIdString := r.URL.Query().Get("author_id")
+	if authorIdString == "" {
+		return uuid.Nil, nil
+	} 
+	parsedId, err := uuid.Parse(authorIdString)
+	if err != nil {
+		return uuid.Nil, err	
+	}
+	return parsedId, nil
 }
 

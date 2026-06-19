@@ -1,75 +1,39 @@
-We recently rolled out a new feature called "Chirpy Red". It's a membership program, and members of "Chirpy Red" get pretty incredible features: like the ability to edit chirps after posting them. But that's beside the point...
+Documentation
+When you're designing a server-side API, no one is going to know how to interact with it unless you tell them. Are you going to force the front-end developers, mobile developers, or other back-end service teams to sift through your code and reverse engineer your API?
 
-Chirpy uses "Polka" as its payment provider. They send us webhooks whenever a user subscribes to Chirpy Red. We need to mark users as Chirpy Red members when we receive these webhooks.
+Of course not! You're a good person. You're going to write documentation.
 
-[X] - Add a migration to the users table to include a new column called is_chirpy_red. This column should be a boolean, and it should default to false.
+First Be Obvious, Then Document It Anyway
+We've talked a lot about how your REST API should follow conventions as much as possible. That said, the conventions are not enough. You still need to document your endpoints. Without documentation, no one will know:
 
-[X] - Add a database query that upgrades a user to chirpy red based on their ID.
+Which resources are available
 
-[ ] - Add a POST /api/polka/webhooks endpoint. It should accept a request of this shape:
+- What the path to the endpoints are
+- Which HTTP methods are supported for each resource
+- What the shape of the data is for each resource
+- etc.
 
-{
-"event": "user.upgraded",
-"data": {
-"user_id": "3311741c-680c-4546-99f3-fc9efac2036c"
-}
-}
+## Assignment
 
-[ ] - If the event is anything other than user.upgraded, the endpoint should immediately respond with a 204 status code - we don't care about any other events.
-[ ] - If the event is user.upgraded, then it should update the user in the database, and mark that they are a Chirpy Red member.
-[ ] - If the user is upgraded successfully, the endpoint should respond with a 204 status code and an empty response body. If the user can't be found, the endpoint should respond with a 404 status code.
-Polka uses the response code to know whether or not the webhook was received successfully. If the response code is anything other than 2XX, they'll retry the request.
+One type of endpoint that's nearly impossible to interact with without documentation is a plural GET endpoint, that is, an endpoint that returns a list of resources. They often have different sorting, filtering, and pagination features.
 
-Update all endpoints that return user resources to include the is_chirpy_red field.
+[ ] - Update the GET /api/chirps endpoint. It should accept an optional query parameter called author_id.
+[ ] - If the author_id query parameter is provided, the endpoint should return only the chirps for that author.
+[ ] - If the author_id query parameter is not provided, the endpoint should return all chirps as it did before.
 
-bootdev run 1304e939-bf50-48d3-a351-b35faafc267d
+### For example:
 
-bootdev run 1304e939-bf50-48d3-a351-b35faafc267d -s
+GET http://localhost:8080/api/chirps?author_id=1
 
-Default Base URL: http://localhost:8080
-Optionally configure your CLI to override the default base URL by running bootdev config base_url <url>
-Run the CLI commands to test your solution.
+Continue sorting the chirps by created_at in ascending order.
 
-POST /admin/reset
+Be sure to filter by author ID at the database level, not in memory! That will be more efficient on large datasets.
 
-1. Expecting status code: 200
-   POST /api/users
-   Request Body:
-   {
-   "email": "walt@breakingbad.com",
-   "password": "123456"
-   }
+Run and submit the CLI tests.
 
-1. Expecting status code: 201
-1. Expecting JSON at .email to be equal to walt@breakingbad.com
-1. Expecting JSON at .is_chirpy_red to be equal to false
-   Parsing userID variable from response body .id
-   POST /api/polka/webhooks
-   Request Body:
-   {
-   "data": {
-   "user_id": "${userID}"
-   },
-   "event": "user.payment_failed"
-   }
+Tips
+The http.Request struct has a way to grab the query parameters from the URL:
 
-1. Expecting status code: 204
-   POST /api/polka/webhooks
-   Request Body:
-   {
-   "data": {
-   "user_id": "${userID}"
-   },
-   "event": "user.upgraded"
-   }
-
-1. Expecting status code: 204
-   POST /api/login
-   Request Body:
-   {
-   "email": "walt@breakingbad.com",
-   "password": "123456"
-   }
-
-1. Expecting status code: 200
-1. Expecting JSON at .is_chirpy_red to be equal to true
+s := r.URL.Query().Get("author_id")
+// s is a string that contains the value of the author_id query parameter
+// if it exists, or an empty string if it doesn't

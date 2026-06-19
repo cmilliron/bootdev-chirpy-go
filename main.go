@@ -23,6 +23,7 @@ type apiConfig struct {
 	db		*database.Queries
 	platform	string
 	secret		string
+	polkaKey	string
 	defaults	defaults
 }
 
@@ -45,6 +46,11 @@ func main() {
 	if platform == "" {
 		log.Fatal("PLATFORM must be set")
 	}
+
+	polkaKey := os.Getenv("POLKA_KEY")
+	if platform == "" {
+		log.Fatal("POLKA_KEY must be set")
+	}
 	fmt.Println("url: " + dbURL)
 	db, err := sql.Open("postgres", dbURL)
 	if (err != nil) {
@@ -56,6 +62,7 @@ func main() {
 		db: dbQueries,
 		platform: platform,
 		secret: secret,
+		polkaKey: polkaKey,
 		defaults: defaults{
 			tokenExpiresIn: 3600 * time.Second,
 		},
