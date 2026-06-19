@@ -22,6 +22,8 @@ type UserWithToken struct{
 		IsChirpyRed		bool		`json:"is_chirpy_red"`
 	}
 
+// handlerLogin authenticates a user, verifies the password, and returns
+// the access token, refresh token, and user details.
 func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Email 	string `json:"email"`
@@ -83,6 +85,7 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 
+// handlerRefreshToken exchanges a valid refresh token for a new access token.
 func (cfg *apiConfig) handlerRefreshToken(w http.ResponseWriter, r *http.Request) {
 	refresh_token, err := auth.GetBearerToken(r.Header)
 	if err != nil {
@@ -112,6 +115,8 @@ func (cfg *apiConfig) handlerRefreshToken(w http.ResponseWriter, r *http.Request
 	})
 }
 
+// handlerRevokeRefreshToken invalidates a refresh token so it can no longer
+// be used to mint new access tokens.
 func (cfg *apiConfig) handlerRevokeRefreshToken(w http.ResponseWriter, r *http.Request) {
 	refresh_token, err := auth.GetBearerToken(r.Header)
 	if err != nil {

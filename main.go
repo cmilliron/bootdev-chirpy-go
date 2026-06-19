@@ -71,25 +71,24 @@ func main() {
 	mux := http.NewServeMux()
 	fileServer := http.FileServer(http.Dir(filePathRoot))
 	
-	// strip the app so that it doesn't automatically the route to the path and start serving 
-	// from static/ and not try to serve from app/static/
+	// Serve the frontend assets from /app and count each file request.
 	mux.Handle("/app/", apiCfg.middlewareMetricsInc(http.StripPrefix("/app", fileServer)))
 
-	// api routes
+	// API routes for health checks, chirps, users, auth, and webhook events.
 	mux.HandleFunc("GET /api/healthz", healthStatusHandler)
 	// mux.HandleFunc("POST /api/validate_chirp", handleValidateChirp)
-	mux.HandleFunc("POST /api/chirps", apiCfg.handlerCreateChirp)
-	mux.HandleFunc("GET /api/chirps", apiCfg.handlerGetAllChrips)
-	mux.HandleFunc("GET /api/chirps/{chirpId}", apiCfg.handlerSingleChirp)
-	mux.HandleFunc("POST /api/users", apiCfg.handlerCreateUser)
-	mux.HandleFunc("POST /api/login", apiCfg.handlerLogin)
-	mux.HandleFunc("POST /api/refresh", apiCfg.handlerRefreshToken)
-	mux.HandleFunc("POST /api/revoke", apiCfg.handlerRevokeRefreshToken)
-	mux.HandleFunc("PUT /api/users", apiCfg.handlerUpdateUser)
-	mux.HandleFunc("DELETE /api/chirps/{chirpId}", apiCfg.handlerDeleteChirp)
-	mux.HandleFunc("POST /api/polka/webhooks", apiCfg.handlerUpdateChirpyRed)
+	mux.HandleFunc("POST /api/chirps", apiCfg.handlerCreateChirp) // create a new chirp
+	mux.HandleFunc("GET /api/chirps", apiCfg.handlerGetAllChrips) // list chirps (optionally filtered by author)
+	mux.HandleFunc("GET /api/chirps/{chirpId}", apiCfg.handlerSingleChirp) // fetch one chirp by ID
+	mux.HandleFunc("POST /api/users", apiCfg.handlerCreateUser) // create a new user account
+	mux.HandleFunc("POST /api/login", apiCfg.handlerLogin) // authenticate a user and return tokens
+	mux.HandleFunc("POST /api/refresh", apiCfg.handlerRefreshToken) // refresh an expired access token
+	mux.HandleFunc("POST /api/revoke", apiCfg.handlerRevokeRefreshToken) // revoke a refresh token
+	mux.HandleFunc("PUT /api/users", apiCfg.handlerUpdateUser) // update a user's profile information
+	mux.HandleFunc("DELETE /api/chirps/{chirpId}", apiCfg.handlerDeleteChirp) // delete one chirp if owned by the user
+	mux.HandleFunc("POST /api/polka/webhooks", apiCfg.handlerUpdateChirpyRed) // handle premium upgrade webhook events
 
-	// admin routes
+	// Admin routes for metrics and database reset operations.
 	mux.HandleFunc("GET /admin/metrics", apiCfg.metricsHandler)
 	mux.HandleFunc("POST /admin/reset", apiCfg.resetHandler)
 	

@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// POST /api/chirps
+// handlerCreateChirp creates a new chirp for the authenticated user.
 func (cfg *apiConfig) handlerCreateChirp(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Body 	string `json:"body"`
@@ -63,8 +63,8 @@ func (cfg *apiConfig) handlerCreateChirp(w http.ResponseWriter, r *http.Request)
 	sendApiResponse(w, http.StatusCreated, resChirp)
 }
 
-// GET /api/chirps
-// optional query pararameters: author_id
+// handlerGetAllChrips returns all chirps, or only those written by a specific
+// author when the author_id query parameter is provided.
 func (cfg *apiConfig) handlerGetAllChrips(w http.ResponseWriter, r *http.Request) {
 	authorId, err := getAuthorFromQueryParams(r)	
 	if err != nil {
@@ -103,6 +103,7 @@ func (cfg *apiConfig) handlerGetAllChrips(w http.ResponseWriter, r *http.Request
 	sendApiResponse(w, http.StatusOK, resChirps)
 }
 
+// handlerSingleChirp fetches one chirp by its ID from the URL path.
 func (cfg *apiConfig) handlerSingleChirp(w http.ResponseWriter, r *http.Request) {
 	chirpId := r.PathValue("chirpId")
 	chirpUuid, err := uuid.Parse(chirpId)
@@ -128,6 +129,7 @@ func (cfg *apiConfig) handlerSingleChirp(w http.ResponseWriter, r *http.Request)
 	sendApiResponse(w, http.StatusOK, resChirp)
 }
 
+// handlerDeleteChirp deletes a chirp only when the requester owns it.
 func (cfg *apiConfig) handlerDeleteChirp(w http.ResponseWriter, r *http.Request) {
 	
 	accessToken, err := auth.GetBearerToken(r.Header)

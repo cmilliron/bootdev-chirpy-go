@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// handlerCreateUser registers a new user account with a hashed password.
 func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Email 	string `json:"email"`
@@ -49,6 +50,7 @@ func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) 
 
 }
 
+// handlerUpdateUser updates the authenticated user's email and password.
 func (cfg *apiConfig) handlerUpdateUser(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Email 		string `json:"email"`
@@ -101,6 +103,8 @@ func (cfg *apiConfig) handlerUpdateUser(w http.ResponseWriter, r *http.Request) 
 	sendApiResponse(w, http.StatusOK, mappedUser)
 }
 
+// handlerUpdateChirpyRed processes the Polka webhook event and marks a user
+// as Chirpy Red when their upgrade event is received.
 func (cfg *apiConfig) handlerUpdateChirpyRed(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Event	string	`json:"event"`
