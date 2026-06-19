@@ -67,7 +67,7 @@ func TestGetBearerToken(t *testing.T) {
 			headers: http.Header{
 				"Authorization": []string{"Bearer some-valid-token-123"},
 			},
-			expectedToken: "Bearer some-valid-token-123",
+			expectedToken: "some-valid-token-123",
 			expectErr:     false,
 		},
 		{

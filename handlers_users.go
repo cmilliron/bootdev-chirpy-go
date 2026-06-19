@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/cmilliron/bootdev-chirpy-go/internal/auth"
@@ -115,7 +116,8 @@ func (cfg *apiConfig) handlerUpdateChirpyRed(w http.ResponseWriter, r *http.Requ
 
 	apiKey, err := auth.GetApiKey(r.Header)
 	if err != nil || apiKey != cfg.polkaKey {
-		respondWithError(w, http.StatusUnauthorized, "User not authorized", err)
+		output := fmt.Sprintf("User not authorized: %v", err)
+		respondWithError(w, http.StatusUnauthorized, output, err)
 		return
 	}
 

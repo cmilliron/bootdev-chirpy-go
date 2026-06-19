@@ -32,7 +32,7 @@ func GetBearerToken(headers http.Header) (string, error) {
 	authHeader := headers.Get("Authorization")
 
 	if authHeader == "" {
-		return "", fmt.Errorf("Auhorization failed")
+		return "", fmt.Errorf("Athorization failed")
 	}
 
 	token, prefixExists := strings.CutPrefix(authHeader, "Bearer ")
@@ -47,7 +47,7 @@ func GetApiKey(headers http.Header) (string, error) {
 	authHeader := headers.Get("Authorization")
 
 	if authHeader == "" {
-		return "", fmt.Errorf("Auhorization failed")
+		return "", fmt.Errorf("No Authorization header provided")
 	}
 
 	token, prefixExists := strings.CutPrefix(authHeader, "ApiKey ")

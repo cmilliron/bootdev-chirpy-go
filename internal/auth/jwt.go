@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"fmt"
 	"log"
 	"time"
 
@@ -23,7 +22,7 @@ func MakeJWT(userID uuid.UUID, tokenSecret string, expiresIn time.Duration) (str
 		log.Println(ss, err)
 		return "", err
 	}
-	fmt.Printf("New Token: %s\n", ss)
+	// fmt.Printf("New Token: %s\n", ss)
 	return ss, nil
 }
 
