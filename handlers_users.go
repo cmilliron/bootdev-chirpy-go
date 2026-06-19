@@ -6,6 +6,7 @@ import (
 
 	"github.com/cmilliron/bootdev-chirpy-go/internal/auth"
 	"github.com/cmilliron/bootdev-chirpy-go/internal/database"
+	"github.com/google/uuid"
 )
 
 func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) {
@@ -42,6 +43,7 @@ func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) 
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.CreatedAt,
 		Email: user.Email,
+		IsChirpyRed: user.IsChirpyRed,
 	}
 	sendApiResponse(w, http.StatusCreated, mappedUser)
 
@@ -94,9 +96,40 @@ func (cfg *apiConfig) handlerUpdateUser(w http.ResponseWriter, r *http.Request) 
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.CreatedAt,
 		Email: user.Email,
+		IsChirpyRed: user.IsChirpyRed,
 	}
 	sendApiResponse(w, http.StatusOK, mappedUser)
+}
 
-	
+func (cfg *apiConfig) handlerUpdateChirpyRed(w http.ResponseWriter, r *http.Request) {
+	type parameters struct {
+		Event	string	`json:"event"`
+		Data	struct {	
+			UserId	uuid.UUID	`json:"user_id"`
+		} `json:"data"`
+	}
 
+	var params parameters
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&params)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters", err)
+		return
+	}
+
+	if params.Event != "user.upgraded" {
+		sendApiResponse(w, http.StatusNoContent, nil)
+		return
+	}
+
+	_, err = cfg.db.UpdateUserPremiumStatus(r.Context(), database.UpdateUserPremiumStatusParams{
+		IsChirpyRed: true,
+		ID: params.Data.UserId,
+	})
+	if err != nil {
+		respondWithError(w, http.StatusNotFound, "User Not Found", err)
+		return
+    }
+
+	sendApiResponse(w, http.StatusNoContent, nil)
 }
