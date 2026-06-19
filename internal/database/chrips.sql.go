@@ -53,11 +53,14 @@ func (q *Queries) DeleteChirpByID(ctx context.Context, id uuid.UUID) error {
 
 const getAllChirps = `-- name: GetAllChirps :many
 SELECT id, created_at, updated_at, body, user_id FROM chirps
-ORDER BY created_at ASC
+ORDER BY 
+    CASE WHEN $1::text = 'asc' THEN created_at END ASC,
+    CASE WHEN $1::text = 'desc' THEN created_at END DESC,
+    CASE WHEN $1::text NOT IN ('asc', 'desc') THEN created_at END ASC
 `
 
-func (q *Queries) GetAllChirps(ctx context.Context) ([]Chirp, error) {
-	rows, err := q.db.QueryContext(ctx, getAllChirps)
+func (q *Queries) GetAllChirps(ctx context.Context, dollar_1 string) ([]Chirp, error) {
+	rows, err := q.db.QueryContext(ctx, getAllChirps, dollar_1)
 	if err != nil {
 		return nil, err
 	}
@@ -106,12 +109,20 @@ func (q *Queries) GetChirpByID(ctx context.Context, id uuid.UUID) (Chirp, error)
 
 const getChirpsByAuthor = `-- name: GetChirpsByAuthor :many
 SELECT id, created_at, updated_at, body, user_id FROM chirps
-WHERE (user_id = $1)
-ORDER BY created_at ASC
+WHERE user_id = $1
+ORDER BY
+    CASE WHEN $2::text = 'asc' THEN created_at END ASC,
+    CASE WHEN $2::text = 'desc' THEN created_at END DESC,
+    CASE WHEN $2::text NOT IN ('asc', 'desc') THEN created_at END ASC
 `
 
-func (q *Queries) GetChirpsByAuthor(ctx context.Context, userID uuid.UUID) ([]Chirp, error) {
-	rows, err := q.db.QueryContext(ctx, getChirpsByAuthor, userID)
+type GetChirpsByAuthorParams struct {
+	UserID  uuid.UUID
+	Column2 string
+}
+
+func (q *Queries) GetChirpsByAuthor(ctx context.Context, arg GetChirpsByAuthorParams) ([]Chirp, error) {
+	rows, err := q.db.QueryContext(ctx, getChirpsByAuthor, arg.UserID, arg.Column2)
 	if err != nil {
 		return nil, err
 	}

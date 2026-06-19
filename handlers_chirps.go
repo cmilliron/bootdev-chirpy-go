@@ -71,13 +71,18 @@ func (cfg *apiConfig) handlerGetAllChrips(w http.ResponseWriter, r *http.Request
 		respondWithError(w, http.StatusBadRequest, "Invalid author ID", err)
 		return
 	}
+
+	sortOrder := r.URL.Query().Get("sort")
 	
 	var chirps []database.Chirp
 
 	if authorId == uuid.Nil {
-		chirps, err = cfg.db.GetAllChirps(r.Context())
+		chirps, err = cfg.db.GetAllChirps(r.Context(), sortOrder)
 	} else {
-		chirps, err = cfg.db.GetChirpsByAuthor(r.Context(), authorId)
+		chirps, err = cfg.db.GetChirpsByAuthor(r.Context(), database.GetChirpsByAuthorParams{
+			UserID: authorId,
+			Column2: sortOrder,
+		})
 	}
 
 	if err != nil {
