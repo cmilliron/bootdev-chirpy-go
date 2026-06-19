@@ -84,7 +84,7 @@ func (cfg *apiConfig) handlerGetAllChrips(w http.ResponseWriter, r *http.Request
 }
 
 func (cfg *apiConfig) handlerSingleChirp(w http.ResponseWriter, r *http.Request) {
-	chirpId := r.PathValue("ChirpId")
+	chirpId := r.PathValue("chirpId")
 	chirpUuid, err := uuid.Parse(chirpId)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid chirp ID", err)
@@ -106,6 +106,42 @@ func (cfg *apiConfig) handlerSingleChirp(w http.ResponseWriter, r *http.Request)
 	}
 
 	sendApiResponse(w, http.StatusOK, resChirp)
+}
+
+func (cfg *apiConfig) handlerDeleteChirp(w http.ResponseWriter, r *http.Request) {
+	
+	accessToken, err := auth.GetBearerToken(r.Header)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, "No access token", err)
+		return
+    }
+	
+	userId, err := auth.ValidateJWT(accessToken, cfg.secret)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, "Token malformed or ...", err)
+		return
+    }
+	
+	chirpId := r.PathValue("chirpId")
+	chirpUuid, err := uuid.Parse(chirpId)
+	chirp, err := cfg.db.GetChirpByID(r.Context(), chirpUuid)
+	if err != nil {
+		respondWithError(w, http.StatusNotFound, "Could fetch tweet", err)
+		return
+    }
+	
+	if chirp.UserID != userId {
+		respondWithError(w, http.StatusForbidden, "Chirp does not belong to user", err)
+		return
+	}
+
+	err = cfg.db.DeleteChirpByID(r.Context(), chirp.ID)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "You can't delete this chirp", err)
+		return
+    }
+
+	sendApiResponse(w, http.StatusNoContent, nil)
 }
 
 
